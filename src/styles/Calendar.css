@@ -1,0 +1,97 @@
+.calendar {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  position: relative;
+}
+
+.calendar h2 {
+  margin: 10px 0;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.navigation {
+  position: absolute;
+  top: 21px;
+  width: 91%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.navigation button {
+  font: bold;
+  font-size: 25px;
+  margin: 0 10px;
+  padding: 8px 12px;
+  border: none;
+  background-color: transparent;
+  color: 495057;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.navigation button:hover {
+  background-color: rgba(128, 128, 128, 0.5);
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.weekday {
+  font-weight: bold;
+  color: #333;
+  font-size: 16px;
+}
+
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.day {
+  padding: 15px;
+  border-radius: 50%;
+  text-align: center;
+  position: relative;
+  cursor: pointer;
+}
+
+.day.has-word {
+  background-color: #d4fcd8; /* 초록색 배경 */
+}
+
+.checkmark {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  color: green;
+  font-weight: bold;
+}
+
+.day.empty {
+  background-color: transparent;
+}
+
+.day:hover::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 40px;
+  height: 40px;
+  background-color: rgba(128, 128, 128, 0.5);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}

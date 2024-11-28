@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import AddWordForm from "./AddWordForm"; // AddWordForm 컴포넌트를 불러옵니다
 import "../styles/WordList.css";
 
 const WordList = ({ date }) => {
@@ -11,10 +12,6 @@ const WordList = ({ date }) => {
   const [isEditing, setIsEditing] = useState(false); // Edit 모드
   const [showAddForm, setShowAddForm] = useState(false); // Add Word 폼
   const [editedWords, setEditedWords] = useState([]); // 수정 중인 단어 목록
-
-  // 추가할 단어 상태
-  const [newWord, setNewWord] = useState("");
-  const [newMean, setNewMean] = useState("");
 
   useEffect(() => {
     const fetchWords = async () => {
@@ -41,23 +38,12 @@ const WordList = ({ date }) => {
   }, [date]);
 
   // Add Word 동작
-  const handleAddWord = (event) => {
-    if (event.key === "Enter" && newWord && newMean) {
-      const newWordData = { id: Date.now(), word: newWord, mean: newMean };
-      setWords([...words, newWordData]);
-      setNewWord("");
-      setNewMean("");
-    }
-  };
-
-  const handleAddDone = () => {
-    console.log("등록된 단어:", words);
+  const handleAddDone = (newWordData) => {
+    setWords([...words, { ...newWordData, id: Date.now() }]);
     setShowAddForm(false); // 폼 닫기
   };
 
   const handleAddCancel = () => {
-    setNewWord("");
-    setNewMean("");
     setShowAddForm(false); // 폼 닫기
   };
 
@@ -153,28 +139,7 @@ const WordList = ({ date }) => {
       )}
 
       {showAddForm && (
-        <div>
-          <input
-            type="text"
-            placeholder="Word"
-            value={newWord}
-            onChange={(e) => setNewWord(e.target.value)}
-            onKeyPress={handleAddWord}
-          />
-          <input
-            type="text"
-            placeholder="Mean"
-            value={newMean}
-            onChange={(e) => setNewMean(e.target.value)}
-            onKeyPress={handleAddWord}
-          />
-          <button className="done-button" onClick={handleAddDone}>
-            Done
-          </button>
-          <button className="cancel-button" onClick={handleAddCancel}>
-            Cancel
-          </button>
-        </div>
+        <AddWordForm onAddDone={handleAddDone} onAddCancel={handleAddCancel} />
       )}
 
       {isEditing && (

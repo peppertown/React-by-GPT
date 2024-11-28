@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import AddWordForm from "./AddWordForm"; // AddWordForm 컴포넌트를 불러옵니다
 import "../styles/WordList.css";
 
 const WordList = ({ date }) => {
@@ -8,10 +7,33 @@ const WordList = ({ date }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // 상태 관리
-  const [isEditing, setIsEditing] = useState(false); // Edit 모드
-  const [showAddForm, setShowAddForm] = useState(false); // Add Word 폼
-  const [editedWords, setEditedWords] = useState([]); // 수정 중인 단어 목록
+  const [isEditing, setIsEditing] = useState(false);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [editedWords, setEditedWords] = useState([]);
+
+  const [newWord, setNewWord] = useState("");
+  const [newMean, setNewMean] = useState("");
+
+  // 오늘 날짜와 비교하기 위한 UTC 포맷
+  const todayUtc = new Date(
+    Date.UTC(
+      new Date().getFullYear(),
+      new Date().getMonth(),
+      new Date().getDate()
+    )
+  )
+    .toISOString()
+    .split("T")[0];
+
+  // date를 UTC 기준으로 변환
+  const targetDateUtc = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+  )
+    .toISOString()
+    .split("T")[0];
+
+  // 오늘 날짜와 targetDate 비교
+  const isTargetDate = todayUtc === targetDateUtc;
 
   useEffect(() => {
     const fetchWords = async () => {
@@ -26,7 +48,7 @@ const WordList = ({ date }) => {
           }`
         );
         setWords(response.data.words || []);
-        setEditedWords(response.data.words || []); // 초기화
+        setEditedWords(response.data.words || []);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -37,20 +59,29 @@ const WordList = ({ date }) => {
     fetchWords();
   }, [date]);
 
-  // Add Word 동작
-  const handleAddDone = (newWordData) => {
-    setWords([...words, { ...newWordData, id: Date.now() }]);
-    setShowAddForm(false); // 폼 닫기
+  const handleAddWord = (event) => {
+    if (event.key === "Enter" && newWord && newMean) {
+      const newWordData = { id: Date.now(), word: newWord, mean: newMean };
+      setWords([...words, newWordData]);
+      setNewWord("");
+      setNewMean("");
+    }
+  };
+
+  const handleAddDone = () => {
+    console.log("등록된 단어:", words);
+    setShowAddForm(false);
   };
 
   const handleAddCancel = () => {
-    setShowAddForm(false); // 폼 닫기
+    setNewWord("");
+    setNewMean("");
+    setShowAddForm(false);
   };
 
-  // Edit 동작
   const handleEditClick = () => {
     setIsEditing(true);
-    setShowAddForm(false); // Add Word 모드 종료
+    setShowAddForm(false);
   };
 
   const handleEditChange = (index, field, value) => {
@@ -69,16 +100,16 @@ const WordList = ({ date }) => {
           })
         )
       );
-      setWords(editedWords); // 수정된 단어 목록 업데이트
-      setIsEditing(false); // 수정 모드 종료
+      setWords(editedWords);
+      setIsEditing(false);
     } catch (err) {
       console.error(err);
     }
   };
 
   const handleEditCancel = () => {
-    setEditedWords(words); // 원래 상태로 복원
-    setIsEditing(false); // 수정 모드 종료
+    setEditedWords(words);
+    setIsEditing(false);
   };
 
   if (loading) return <div>Loading...</div>;
@@ -129,9 +160,11 @@ const WordList = ({ date }) => {
 
       {!isEditing && !showAddForm && (
         <>
-          <button className="add-word" onClick={() => setShowAddForm(true)}>
-            Add Word
-          </button>
+          {isTargetDate && (
+            <button className="add-word" onClick={() => setShowAddForm(true)}>
+              Add Word
+            </button>
+          )}
           <button className="edit-word" onClick={handleEditClick}>
             Edit
           </button>
@@ -139,7 +172,28 @@ const WordList = ({ date }) => {
       )}
 
       {showAddForm && (
-        <AddWordForm onAddDone={handleAddDone} onAddCancel={handleAddCancel} />
+        <div>
+          <input
+            type="text"
+            placeholder="Word"
+            value={newWord}
+            onChange={(e) => setNewWord(e.target.value)}
+            onKeyPress={handleAddWord}
+          />
+          <input
+            type="text"
+            placeholder="Mean"
+            value={newMean}
+            onChange={(e) => setNewMean(e.target.value)}
+            onKeyPress={handleAddWord}
+          />
+          <button className="done-button" onClick={handleAddDone}>
+            Done
+          </button>
+          <button className="cancel-button" onClick={handleAddCancel}>
+            Cancel
+          </button>
+        </div>
       )}
 
       {isEditing && (

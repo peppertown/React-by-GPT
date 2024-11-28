@@ -95,3 +95,19 @@
   transform: translate(-50%, -50%);
   z-index: 1;
 }
+
+.day.registered {
+  position: relative;
+  background-color: rgba(0, 128, 0, 0.1); /* 배경 색상 */
+  border: 1px solid #008000; /* 초록 테두리 */
+  border-radius: 50%;
+}
+
+.checkmark {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  color: #008000;
+  font-size: 12px;
+  font-weight: bold;
+}

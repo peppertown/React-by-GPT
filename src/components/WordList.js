@@ -1,211 +1,68 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import "../styles/WordList.css";
+import { useNavigate, useParams } from "react-router-dom";
 
 const WordList = ({ date }) => {
   const [words, setWords] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [editedWords, setEditedWords] = useState([]);
-
-  const [newWord, setNewWord] = useState("");
-  const [newMean, setNewMean] = useState("");
-
-  // 오늘 날짜와 비교하기 위한 UTC 포맷
-  const todayUtc = new Date(
-    Date.UTC(
-      new Date().getFullYear(),
-      new Date().getMonth(),
-      new Date().getDate()
-    )
-  )
-    .toISOString()
-    .split("T")[0];
-
-  // date를 UTC 기준으로 변환
-  const targetDateUtc = new Date(
-    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
-  )
-    .toISOString()
-    .split("T")[0];
-
-  // 오늘 날짜와 targetDate 비교
-  const isTargetDate = todayUtc === targetDateUtc;
+  const navigate = useNavigate();
+  const { date: urlDate } = useParams(); // URL에서 날짜를 가져옵니다.
 
   useEffect(() => {
+    // 서버에서 단어 데이터를 받아오는 부분
     const fetchWords = async () => {
       try {
-        setLoading(true);
-        const utcDate = new Date(
-          Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
-        );
-        const response = await axios.get(
-          `http://localhost:824/word?date=${
-            utcDate.toISOString().split("T")[0]
-          }`
-        );
-        setWords(response.data.words || []);
-        setEditedWords(response.data.words || []);
-      } catch (err) {
-        setError(err.message);
+        // 여기에 실제 API 호출을 넣습니다.
+        const response = await fetch(`/word?date=${urlDate}`);
+        const data = await response.json();
+
+        if (data.words) {
+          setWords(data.words); // 서버에서 받아온 단어 목록을 상태에 저장
+        } else {
+          setWords([]); // 만약 words가 없다면 빈 배열로 설정
+        }
+      } catch (error) {
+        console.error("단어 데이터를 불러오는 데 실패했습니다:", error);
+        setWords([]); // 에러 발생 시 빈 배열로 설정
       } finally {
-        setLoading(false);
+        setLoading(false); // 로딩 상태 종료
       }
     };
 
     fetchWords();
-  }, [date]);
+  }, [urlDate]);
 
-  const handleAddWord = (event) => {
-    if (event.key === "Enter" && newWord && newMean) {
-      const newWordData = { id: Date.now(), word: newWord, mean: newMean };
-      setWords([...words, newWordData]);
-      setNewWord("");
-      setNewMean("");
-    }
+  const handleAddWordClick = () => {
+    navigate("/add-word");
   };
 
-  const handleAddDone = () => {
-    console.log("등록된 단어:", words);
-    setShowAddForm(false);
+  const handleEditWordClick = (id) => {
+    navigate(`/edit-word/${id}`);
   };
 
-  const handleAddCancel = () => {
-    setNewWord("");
-    setNewMean("");
-    setShowAddForm(false);
-  };
-
-  const handleEditClick = () => {
-    setIsEditing(true);
-    setShowAddForm(false);
-  };
-
-  const handleEditChange = (index, field, value) => {
-    const updatedWords = [...editedWords];
-    updatedWords[index] = { ...updatedWords[index], [field]: value };
-    setEditedWords(updatedWords);
-  };
-
-  const handleEditDone = async () => {
-    try {
-      await Promise.all(
-        editedWords.map((word) =>
-          axios.put(`http://localhost:824/word/${word.id}`, {
-            word: word.word,
-            mean: word.mean,
-          })
-        )
-      );
-      setWords(editedWords);
-      setIsEditing(false);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const handleEditCancel = () => {
-    setEditedWords(words);
-    setIsEditing(false);
-  };
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  // 로딩 중인 경우 메시지 또는 로딩 표시
+  if (loading) {
+    return <div>로딩 중...</div>;
+  }
 
   return (
-    <div className="word-list">
+    <div>
       <h2>{date.toLocaleDateString()}에 등록된 단어 목록</h2>
-      <div className="table">
-        <div className="table-header">
-          <div className="header-cell">Word</div>
-          <div className="header-cell">Mean</div>
-        </div>
-        <div className="table-body">
-          {(isEditing ? editedWords : words).map((item, index) => (
-            <div className="table-row" key={item.id}>
-              {isEditing ? (
-                <>
-                  <div className="table-cell">
-                    <input
-                      type="text"
-                      value={item.word}
-                      onChange={(e) =>
-                        handleEditChange(index, "word", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="table-cell">
-                    <input
-                      type="text"
-                      value={item.mean}
-                      onChange={(e) =>
-                        handleEditChange(index, "mean", e.target.value)
-                      }
-                    />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="table-cell">{item.word}</div>
-                  <div className="table-cell">{item.mean}</div>
-                </>
-              )}
+      <button onClick={handleAddWordClick}>Add Word</button>
+      <div className="word-list">
+        {/* words가 존재하고 배열일 때만 map() 호출 */}
+        {words && Array.isArray(words) && words.length > 0 ? (
+          words.map((word) => (
+            <div key={word.id} className="word-item">
+              <span>
+                {word.word}: {word.mean}
+              </span>
+              <button onClick={() => handleEditWordClick(word.id)}>Edit</button>
             </div>
-          ))}
-        </div>
+          ))
+        ) : (
+          <div>등록된 단어가 없습니다.</div> // 단어가 없을 때 표시할 내용
+        )}
       </div>
-
-      {!isEditing && !showAddForm && (
-        <>
-          {isTargetDate && (
-            <button className="add-word" onClick={() => setShowAddForm(true)}>
-              Add Word
-            </button>
-          )}
-          <button className="edit-word" onClick={handleEditClick}>
-            Edit
-          </button>
-        </>
-      )}
-
-      {showAddForm && (
-        <div>
-          <input
-            type="text"
-            placeholder="Word"
-            value={newWord}
-            onChange={(e) => setNewWord(e.target.value)}
-            onKeyPress={handleAddWord}
-          />
-          <input
-            type="text"
-            placeholder="Mean"
-            value={newMean}
-            onChange={(e) => setNewMean(e.target.value)}
-            onKeyPress={handleAddWord}
-          />
-          <button className="done-button" onClick={handleAddDone}>
-            Done
-          </button>
-          <button className="cancel-button" onClick={handleAddCancel}>
-            Cancel
-          </button>
-        </div>
-      )}
-
-      {isEditing && (
-        <div>
-          <button className="done-button" onClick={handleEditDone}>
-            Done
-          </button>
-          <button className="cancel-button" onClick={handleEditCancel}>
-            Cancel
-          </button>
-        </div>
-      )}
     </div>
   );
 };

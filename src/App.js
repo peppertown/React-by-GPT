@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Calendar from "./components/Calendar";
-import EditWord from "./components/EditWord"; // EditWord 컴포넌트도 유지
+import WordList from "./components/WordList"; // WordList 컴포넌트 추가
 import "./App.css";
 
 function App() {
@@ -10,10 +10,9 @@ function App() {
       <div className="app">
         <h1>공부</h1>
         <Routes>
-          {/* 필요 없는 페이지들 삭제 */}
           <Route path="/" element={<Home />} />
-          <Route path="/edit-word" element={<EditWord />} />{" "}
-          {/* EditWord 라우트 유지 */}
+          <Route path="/words/:date" element={<WordList />} />{" "}
+          {/* 날짜에 맞는 단어 목록 페이지 */}
         </Routes>
       </div>
     </Router>
@@ -24,7 +23,7 @@ function App() {
 const Home = () => {
   return (
     <div>
-      <Calendar /> {/* Calendar 컴포넌트 유지 */}
+      <Calendar /> {/* Calendar 컴포넌트 추가 */}
     </div>
   );
 };
